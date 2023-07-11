@@ -1,34 +1,33 @@
 pipeline {
-    agent any 
-    
-    stages{
-        stage("Clone Code"){
+    agent any
+
+    stages {
+        stage('clone code') {
             steps {
-                echo "Cloning the code"
-                git url:"https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
+                echo 'clone code from github'
+                git url: "https://github.com/sinchan62/django-notes-app.git", branch: "main"
             }
         }
-        stage("Build"){
+        stage('Build') {
             steps {
-                echo "Building the image"
-                sh "docker build -t my-note-app ."
+                echo 'build the packages'
+                sh "docker build . -t todo-note-app"
             }
         }
-        stage("Push to Docker Hub"){
+        stage('push to dockerhub') {
             steps {
-                echo "Pushing the image to docker hub"
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker tag my-note-app ${env.dockerHubUser}/my-note-app:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/my-note-app:latest"
+                echo 'push the code to docker hub'
+                withCredentials([usernamePassword(credentialsId:"my-credential",passwordVariable:"dockerhubpass",usernameVariable:"dockerhubuser")]) {
+                    sh "docker tag todo-note-app ${env.dockerhubuser}/todo-note-app:latest"
+                    sh "docker login -u ${env.dockerhubuser} -p ${env.dockerhubpass}"
+                    sh "docker push ${env.dockerhubuser}/todo-note-app:latest"
                 }
             }
         }
-        stage("Deploy"){
+        stage('deploy') {
             steps {
-                echo "Deploying the container"
+                echo 'deploy the code'
                 sh "docker-compose down && docker-compose up -d"
-                
             }
         }
     }
